@@ -1,49 +1,72 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../utils/cell_info_channel.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CellInfoView extends StatefulWidget {
-  const CellInfoView({super.key});
 
   @override
   _CellInfoViewState createState() => _CellInfoViewState();
 }
 
 class _CellInfoViewState extends State<CellInfoView> {
-  List<Map<String, dynamic>>? cellInfo;
+  static const platform = MethodChannel('com.example.mobile/network');
+  List<Map<String, dynamic>> networkData = [];
+  bool isLoading = false;
+  String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _getCellInfo();
+    getCellInfo();
   }
 
-  Future<void> _getCellInfo() async {
-    await Permission.location.request();
-    if (await Permission.location.isGranted) {
-      cellInfo = await CellInfoChannel.getCellInfo();
-      print(cellInfo); // Debugging line
-      setState(() {}); // Update the UI
+  Future<void> getCellInfo() async {
+    var status = await Permission.location.request();
+    if (status.isGranted) {
+      fetchNetworkData();
     } else {
-      print("Location permission denied.");
+      setState(() => errorMessage = "Permission denied");
     }
+  }
+
+  Future<void> fetchNetworkData() async {
+    setState(() => isLoading = true);
+    try {
+      final String result = await platform.invokeMethod('fetchNetworkData');
+      print("Result================================: $result");
+      if (result != "No cell info available") {
+        List<dynamic> data = jsonDecode(result);
+        print("Data================================: $data");
+        setState(() => networkData = List<Map<String, dynamic>>.from(data));
+      } else {
+        setState(() => errorMessage = "No network data found");
+      }
+    } on PlatformException catch (e) {
+      setState(() => errorMessage = "Error: ${e.message}");
+    }
+    setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Cell Info"),
-        backgroundColor: Colors.blue, // Example color
+        title: const Text("Network Info"),
+        backgroundColor: Colors.blue,
       ),
-      body: cellInfo == null
-          ? const Center(child: CircularProgressIndicator())
-          : cellInfo!.isEmpty
-          ? const Center(child: Text("No cell info available"))
-          : ListView.builder(
-        itemCount: cellInfo!.length,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : errorMessage.isNotEmpty
+
+          ? Center(child: Text(errorMessage))
+            : ListView.builder(
+        itemCount: networkData.length,
         itemBuilder: (context, index) {
-          final cell = cellInfo![index];
+          final cell = networkData[index];
+          print("Cell================================: $cell");
           return Card(
             elevation: 2,
             shape: RoundedRectangleBorder(
@@ -58,27 +81,17 @@ class _CellInfoViewState extends State<CellInfoView> {
                   ListTile(
                     leading: const Icon(Icons.phone_android),
                     title: const Text("Type"),
-                    subtitle: Text("${cell['type']}"),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.location_on),
-                    title: const Text("CGI"),
-                    subtitle: Text("${cell['cgi']}"),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.signal_cellular_alt),
-                    title: const Text("PSC"),
-                    subtitle: Text("${cell['psc']}"),
+                    subtitle: Text("${cell['Type']}"),
                   ),
                   ListTile(
                     leading: const Icon(Icons.perm_identity),
                     title: const Text("CID"),
-                    subtitle: Text("${cell['cid']}"),
+                    subtitle: Text("${cell['CID']}"),
                   ),
                   ListTile(
                     leading: const Icon(Icons.location_city),
                     title: const Text("LAC"),
-                    subtitle: Text("${cell['lac']}"),
+                    subtitle: Text("${cell['LAC']}"),
                   ),
                   ListTile(
                     leading: const Icon(Icons.language),
@@ -88,12 +101,12 @@ class _CellInfoViewState extends State<CellInfoView> {
                   ListTile(
                     leading: const Icon(Icons.sim_card),
                     title: const Text("MCC"),
-                    subtitle: Text("${cell['mcc']}"),
+                    subtitle: Text("${cell['MCC']}"),
                   ),
                   ListTile(
                     leading: const Icon(Icons.sim_card_alert),
                     title: const Text("MNC"),
-                    subtitle: Text("${cell['mnc']}"),
+                    subtitle: Text("${cell['MNC']}"),
                   ),
                   ListTile(
                     leading: const Icon(Icons.network_cell),
@@ -111,19 +124,9 @@ class _CellInfoViewState extends State<CellInfoView> {
                     subtitle: Text("${cell['cellNumber']}"),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.error_outline),
-                    title: const Text("Bit Error Rate"),
-                    subtitle: Text("${cell['bitErrorRate']}"),
-                  ),
-                  ListTile(
                     leading: const Icon(Icons.signal_wifi_statusbar_connected_no_internet_4),
                     title: const Text("RSSI"),
-                    subtitle: Text("${cell['rssi']}"),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.numbers),
-                    title: const Text("EC No"),
-                    subtitle: Text("${cell['ecNo']}"),
+                    subtitle: Text("${cell['RSSI']}"),
                   ),
                 ],
               ),

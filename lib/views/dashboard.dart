@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/views/rssi_plot.dart';
 import 'cell_info_screen.dart';
 import 'data_visualization_screen.dart';
 import 'chart_screen.dart';
@@ -19,14 +20,15 @@ class Dashboard extends StatelessWidget {
       ),
       body: GridView.count(
         crossAxisCount: 2,
-        childAspectRatio: 1.2, // Adjust aspect ratio for more space
+        childAspectRatio: 1.2,
         children: [
           _buildDashboardItem(context, 'RF Parameters', Icons.network_check, RFParametersScreen()),
           _buildDashboardItem(context, 'Signal Strength', Icons.signal_cellular_alt, SignalStrengthScreen()),
-          _buildDashboardItem(context, 'RSSI Heatmap', Icons.map, const MapScreen()),
-          _buildDashboardItem(context, 'Cellular Data', Icons.cell_tower, const CellInfoView()),
+          _buildDashboardItem(context, 'RSSI Heatmap', Icons.map, const RssiChartScreen()),
+          _buildDashboardItem(context, 'Cellular Data', Icons.cell_tower, CellInfoView()),
           _buildDashboardItem(context, 'App Config', Icons.settings, const ConfigScreen()),
           _buildDashboardItem(context, 'Chart Screen', Icons.chat, const ChartScreen())
+          //Dashhhhhhhh
         ],
       ),
     );

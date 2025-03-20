@@ -102,7 +102,8 @@ async def get_cell_info(cell_id: str):
             "MNC": random.randint(0, 999),
             "Downlink": random.choice(["Up", "Active", "Idle", "Inactive"]),
             "cellNumber": round(random.uniform(0, 999999), 9),
-            "ecNo": round(random.uniform(0, 100), 2),
+            "ecNo": round(random.uniform(0, 100), 2
+                          ),
         }
         for i in range(100)
     ]

@@ -41,5 +41,6 @@ flutter {
     source = "../.."
 }
 dependencies {
+
 //    implementation 'io.flutter:flutter:1.0.0'
 }
